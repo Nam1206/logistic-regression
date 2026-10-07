@@ -1,0 +1,47 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LogisticRegression
+
+# 1. Khởi tạo dữ liệu (Dạng 1D array)
+X = np.array([0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 1.75, 2.00, 2.25, 2.50, 
+              2.75, 3.00, 3.25, 3.50, 4.00, 4.25, 4.50, 4.75, 5.00, 5.50])
+y = np.array([0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1])
+
+# sklearn yêu cầu X có dạng 2D (n_samples, n_features) -> shape (20, 1)
+X_train = X.reshape(-1, 1)
+
+# 2. Khởi tạo và huấn luyện mô hình với .fit()
+# C=1e5 để giảm ảnh hưởng của L2 regularization, giúp kết quả tiệm cận với Stochastic Gradient Descent thuần
+model = LogisticRegression(C=1e5)
+model.fit(X_train, y)
+
+# 3. Lấy ra bộ trọng số w0 (intercept_) và w1 (coef_)
+w0 = model.intercept_[0]
+w1 = model.coef_[0][0]
+
+print("Trọng số w0 (bias):", w0)
+print("Trọng số w1 (weight):", w1)
+
+# Trực quan hóa kết quả
+X0 = X[y == 0]
+y0 = y[y == 0]
+X1 = X[y == 1]
+y1 = y[y == 1]
+
+plt.plot(X0, y0, 'ro', markersize=8, label='Trượt (0)')
+plt.plot(X1, y1, 'bs', markersize=8, label='Đỗ (1)')
+
+# Dự đoán xác suất cho tập điểm xx để vẽ đường cong Sigmoid
+xx = np.linspace(0, 6, 1000).reshape(-1, 1)
+# Có thể tự tính bằng công thức Sigmoid hoặc dùng trực tiếp hàm predict_proba của sklearn:
+yy = model.predict_proba(xx)[:, 1]
+
+threshold = -w0 / w1
+
+plt.axis([-2, 8, -1, 2])
+plt.plot(xx, yy, 'g-', linewidth=2, label='Đường cong Sigmoid')
+plt.plot(threshold, 0.5, 'y^', markersize=8, label='Ngưỡng ra quyết định (0.5)')
+plt.xlabel('Giờ học (studying hours)')
+plt.ylabel('Xác suất đỗ (predicted probability of pass)')
+plt.legend()
+plt.show()
